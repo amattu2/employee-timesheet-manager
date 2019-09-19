@@ -19,7 +19,7 @@ Database Design:
 		- TimesheetID
 		- Start [Ex. 07]
 		- End [Ex. 22]
-		- Comments [Ex. "Tim to Michigan"]
+		- Comments [Ex. "Tester to Michigan"]
 		- Date [Ex. 09/15/2019]
 		- Deleted
 '''
@@ -40,7 +40,7 @@ calendar = Calendar.Calendar()
 currentMonth = datetime.now().month
 AccountConfig = {
 	'Name': 'Employee Timesheet',
-	'AccountName': 'VIPRE Automotive',
+	'AccountName': 'Test Account',
 	'SkipDays': [6]
 }
 UIConfig = {
@@ -346,7 +346,7 @@ class UI(Frame):
 		# Variables
 		months = getMonths()
 		years = getYears()
-		popup = self.createPopup("Create New Timesheet")
+		popup = self.createPopup("Create Timesheet")
 		status = Label(popup, text = "Create new timesheet", width = UIConfig['PopupWidthPX'], height = "2", background = "#3b3b3b", fg = "#ffffff", anchor = "w")
 		employeeSelectFrame = Frame(popup, bg = "#f2f2f2")
 		monthSelect = Combobox(employeeSelectFrame, values = months[0], state = "readonly", height = "4", width = UIConfig['PopupWidthPX'] - 19)
