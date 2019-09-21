@@ -296,7 +296,7 @@ class UI(Frame):
 
 			# Variables
 			frame = Frame(self.timesheetFrame, width = UIConfig['PageWidthPX'], height = "10")
-			status = Label(frame, text = date.strftime("%a, %B %-d %Y"), height = "2", anchor = "w", fg = "#3b3b3b", font=("Sans-serif", 10, "normal"))
+			status = Label(frame, text = date.strftime("%a, %B %d %Y"), height = "2", anchor = "w", fg = "#3b3b3b", font=("Sans-serif", 10, "normal"))
 
 			# Attributes
 			status.grid(column = 0, row = 0, pady = 8, padx = 8, sticky = "w")
