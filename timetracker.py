@@ -28,6 +28,7 @@ Database Design:
 from assets.queries import Query, where
 from assets.database import TinyDB
 from assets.fpdf import FPDF
+from assets.scroll import ScrollFrame
 from tkinter import Tk, Frame, Menu, PhotoImage, Toplevel, Label, Button, Text, LEFT, TOP, X, FLAT, RAISED, messagebox
 from tkinter.ttk import Combobox, Style
 from datetime import datetime
@@ -255,7 +256,8 @@ class UI(Frame):
 		status = Label(window, text = getHeaderText(), width = UIConfig['PageWidthPX'], height = "2", background = "#3b3b3b", fg = "#ffffff", anchor = "w", padx = 8)
 		self.TSSelect = Combobox(employeeSelectFrame, values = getTimesheets(True), state = "readonly", height = "4", width = 10)
 		self.employeeSelect = Combobox(employeeSelectFrame, values = getEmployees(True), state = "readonly", height = "4", width = str(UIConfig['PageWidthPX'] - 4 - 14))
-		self.timesheetFrame = Frame(window, bg = "#f2f2f2")
+		self.scrollFrame = ScrollFrame(window, "#f2f2f2")
+		#self.timesheetFrame = Frame(self.scrollFrame.viewPort, bg = "#f2f2f2")
 
 		# Attributes
 		status.configure(font=("Sans-serif", 11, "normal"))
@@ -265,7 +267,8 @@ class UI(Frame):
 		self.employeeSelect.grid(column = 1, row = 1, pady = 16, padx = 8, sticky = "w")
 		self.employeeSelect.current(0)
 		employeeSelectFrame.grid(column = 0, row = 1, pady = 0, padx = 0, sticky = "w")
-		self.timesheetFrame.grid(column = 0, row = 2, pady = 8, padx = 8, sticky = "w")
+		#self.scrollFrame.grid(column = 0, row = 2, sticky = "w")
+		#self.timesheetFrame.grid(column = 0, row = 2, pady = 8, padx = 8, sticky = "w")
 
 		# Events
 		self.TSSelect.bind("<<ComboboxSelected>>", self.selectTimeSheet)
@@ -295,15 +298,16 @@ class UI(Frame):
 			if (date.weekday() in AccountConfig['SkipDays']): continue
 
 			# Variables
-			frame = Frame(self.timesheetFrame, width = UIConfig['PageWidthPX'], height = "10")
-			status = Label(frame, text = date.strftime("%a, %B %d %Y"), height = "2", anchor = "w", fg = "#3b3b3b", font=("Sans-serif", 10, "normal"))
+			frame = Frame(self.scrollFrame.viewPort, width = UIConfig['PageWidthPX'], height = "10")
+			status = Label(frame, text = date.strftime("%a, %B %d %Y"), width = "25", height = "2", anchor = "w", bg = "#f2f2f2", fg = "#3b3b3b", font=("Sans-serif", 10, "normal"))
 
 			# Attributes
-			status.grid(column = 0, row = 0, pady = 8, padx = 8, sticky = "w")
+			status.grid(row = row, column = 0)
 			frame.grid(column = 0, row = row, pady = 8, padx = 8, sticky = "w")
 
 			# Increment
 			row = row+1
+		self.scrollFrame.grid(column = 0, row = 2, sticky = "w")
 
 	def exportPopup(self):
 		print("Present month & employee selection, then build pdf")
