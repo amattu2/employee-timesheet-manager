@@ -218,7 +218,7 @@ class UI(Frame):
 		# Config
 		self.master.title(AccountConfig['Name'])
 		self.master.geometry("450x500")
-		self.master.resizable(width = False, height = False)
+		#self.master.resizable(width = False, height = False)
 		self.master.configure(background = '#f2f2f2')
 		self.master.tk.call('wm', 'iconphoto', window._w, iconImage)
 		self.master.option_add('*tearOff', False)
@@ -252,27 +252,37 @@ class UI(Frame):
 
 	def buildUI(self):
 		# Variables
-		employeeSelectFrame = Frame(window, bg = UIConfig['Color_Blue'])
-		status = Label(window, text = getHeaderText(), width = UIConfig['PageWidthPX'], height = "2", background = "#3b3b3b", fg = "#ffffff", anchor = "w", padx = 8)
-		self.TSSelect = Combobox(employeeSelectFrame, values = getTimesheets(True), state = "readonly", height = "4", width = 10)
-		self.employeeSelect = Combobox(employeeSelectFrame, values = getEmployees(True), state = "readonly", height = "4", width = str(UIConfig['PageWidthPX'] - 4 - 14))
+		topFrame = Frame(window)
+		statusFrame = Frame(topFrame, bg = "#3b3b3b")
+		inputFrame = Frame(topFrame, bg = UIConfig['Color_Blue'])
+		status = Label(statusFrame, text = getHeaderText(), height = "2", background = "#3b3b3b", fg = "#ffffff", anchor = "w", padx = 8, font=("Sans-serif", 11, "normal"))
+		self.TSSelect = Combobox(inputFrame, values = getTimesheets(True), state = "readonly", height = "4", width = "10")
+		self.employeeSelect = Combobox(inputFrame, values = getEmployees(True), state = "readonly", height = "4", width = "40")
 		self.scrollFrame = ScrollFrame(window, "#f2f2f2")
-		#self.timesheetFrame = Frame(self.scrollFrame.viewPort, bg = "#f2f2f2")
 
 		# Attributes
-		status.configure(font=("Sans-serif", 11, "normal"))
-		status.grid(column = 0, row = 0)
+		status.grid(column = 0, columnspan = 2, row = 0)
 		self.TSSelect.grid(column = 0, row = 1, pady = 16, padx = 8, sticky = "w")
-		self.TSSelect.current(0)
 		self.employeeSelect.grid(column = 1, row = 1, pady = 16, padx = 8, sticky = "w")
+		statusFrame.pack(side = "top", fill = "x", expand = True, anchor = "n")
+		inputFrame.pack(side = "top", fill = "x", expand = True, anchor = "n")
+		topFrame.pack(side="top", fill="x", expand = True, anchor = "n")
+		self.TSSelect.current(0)
 		self.employeeSelect.current(0)
-		employeeSelectFrame.grid(column = 0, row = 1, pady = 0, padx = 0, sticky = "w")
-		#self.scrollFrame.grid(column = 0, row = 2, sticky = "w")
-		#self.timesheetFrame.grid(column = 0, row = 2, pady = 8, padx = 8, sticky = "w")
 
 		# Events
+		self.scrollFrame.canvas.bind_all("<MouseWheel>", self.mw)
+		self.scrollFrame.canvas.bind_all("<Button-4>", self.mw)
+		self.scrollFrame.canvas.bind_all("<Button-5>", self.mw)
 		self.TSSelect.bind("<<ComboboxSelected>>", self.selectTimeSheet)
 		self.employeeSelect.bind("<<ComboboxSelected>>", self.selectEmployee)
+
+	def mw(self, event):
+		# Checks
+		if (event.num and event.num == 5):
+			self.scrollFrame.canvas.yview_scroll(1, "units")
+		elif (event.num and event.num == 4):
+			self.scrollFrame.canvas.yview_scroll(-1, "units")
 
 	def selectTimeSheet(self, event):
 		# Checks
@@ -299,15 +309,15 @@ class UI(Frame):
 
 			# Variables
 			frame = Frame(self.scrollFrame.viewPort, width = UIConfig['PageWidthPX'], height = "10")
-			status = Label(frame, text = date.strftime("%a, %B %d %Y"), width = "25", height = "2", anchor = "w", bg = "#f2f2f2", fg = "#3b3b3b", font=("Sans-serif", 10, "normal"))
+			status = Label(frame, text = date.strftime("%a, %B %d %Y"), width = "25", height = "2", bg = "#f2f2f2", fg = "#3b3b3b", font=("Sans-serif", 10, "normal"))
 
 			# Attributes
-			status.grid(row = row, column = 0)
-			frame.grid(column = 0, row = row, pady = 8, padx = 8, sticky = "w")
+			status.pack(side="top", fill="x", expand = True)
+			frame.grid(column = 0, row = row, pady = 8, padx = 8, sticky = "n")
 
 			# Increment
 			row = row+1
-		self.scrollFrame.grid(column = 0, row = 2, sticky = "w")
+		self.scrollFrame.pack(side="top", fill="both", expand = True)
 
 	def exportPopup(self):
 		print("Present month & employee selection, then build pdf")
