@@ -283,6 +283,10 @@ class UI(Frame):
 			self.scrollFrame.canvas.yview_scroll(1, "units")
 		elif (event.num and event.num == 4):
 			self.scrollFrame.canvas.yview_scroll(-1, "units")
+		elif (event.delta and event.delta < 0):
+			self.scrollFrame.canvas.yview_scroll(1, "units")
+		elif (event.delta and event.delta > 0):
+			self.scrollFrame.canvas.yview_scroll(-1, "units")
 
 	def selectTimeSheet(self, event):
 		# Checks
