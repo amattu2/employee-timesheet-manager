@@ -29,7 +29,7 @@ from assets.queries import Query, where
 from assets.database import TinyDB
 from assets.fpdf import FPDF
 from assets.scroll import ScrollFrame
-from tkinter import Tk, Frame, Menu, PhotoImage, Toplevel, Label, Button, Text, LEFT, TOP, X, FLAT, RAISED, messagebox
+from tkinter import Tk, Frame, Menu, PhotoImage, Toplevel, Label, Button, Text, Entry, LEFT, TOP, X, FLAT, RAISED, END, messagebox
 from tkinter.ttk import Combobox, Style
 from datetime import datetime
 import calendar as Calendar
@@ -257,8 +257,8 @@ class UI(Frame):
 		inputFrame = Frame(topFrame, bg = UIConfig['Color_Blue'])
 		status = Label(statusFrame, text = getHeaderText(), height = "2", background = "#3b3b3b", fg = "#ffffff", anchor = "w", padx = 8, font=("Sans-serif", 11, "normal"))
 		self.TSSelect = Combobox(inputFrame, values = getTimesheets(True), state = "readonly", height = "4", width = "10")
-		self.employeeSelect = Combobox(inputFrame, values = getEmployees(True), state = "readonly", height = "4", width = "40")
-		self.scrollFrame = ScrollFrame(window, "#f2f2f2")
+		self.employeeSelect = Combobox(inputFrame, values = getEmployees(True), state = "readonly", height = "4", width = "38")
+		self.scrollFrame = self.buildFrame()
 
 		# Attributes
 		status.grid(column = 0, columnspan = 2, row = 0)
@@ -266,16 +266,25 @@ class UI(Frame):
 		self.employeeSelect.grid(column = 1, row = 1, pady = 16, padx = 8, sticky = "w")
 		statusFrame.pack(side = "top", fill = "x", expand = True, anchor = "n")
 		inputFrame.pack(side = "top", fill = "x", expand = True, anchor = "n")
-		topFrame.pack(side="top", fill="x", expand = True, anchor = "n")
+		topFrame.pack(side = "top", fill = "x", expand = True, anchor = "n")
 		self.TSSelect.current(0)
 		self.employeeSelect.current(0)
 
 		# Events
-		self.scrollFrame.canvas.bind_all("<MouseWheel>", self.mw)
-		self.scrollFrame.canvas.bind_all("<Button-4>", self.mw)
-		self.scrollFrame.canvas.bind_all("<Button-5>", self.mw)
 		self.TSSelect.bind("<<ComboboxSelected>>", self.selectTimeSheet)
 		self.employeeSelect.bind("<<ComboboxSelected>>", self.selectEmployee)
+
+	def buildFrame(self):
+		# Variables
+		sf = ScrollFrame(window, "#f2f2f2")
+
+		# Events
+		sf.canvas.bind_all("<MouseWheel>", self.mw)
+		sf.canvas.bind_all("<Button-4>", self.mw)
+		sf.canvas.bind_all("<Button-5>", self.mw)
+
+		# Return
+		return sf
 
 	def mw(self, event):
 		# Checks
@@ -287,6 +296,21 @@ class UI(Frame):
 			self.scrollFrame.canvas.yview_scroll(1, "units")
 		elif (event.delta and event.delta > 0):
 			self.scrollFrame.canvas.yview_scroll(-1, "units")
+
+	def focus(self, event):
+		# Checks
+		if (not event): return False
+		if (not event.widget): return False
+		if (not event.widget.get()): return False
+		if (event.widget.get().lower() in ["start time", "end time"]):
+			event.widget.delete(0, END)
+
+	def blur(self, event):
+		# Checks
+		if (not event): return False
+		if (not event.widget): return False
+		if (len(event.widget.get().strip()) <= 0):
+			event.widget.insert(0, "Enter a time")
 
 	def selectTimeSheet(self, event):
 		# Checks
@@ -304,7 +328,9 @@ class UI(Frame):
 		# Variables
 		row = 0
 		self.currentEmployee = self.employeeSelect.get()
-
+		self.scrollFrame = self.buildFrame()
+		self.scrollFrame.pack(side="top", fill="both", expand = True)
+		
 		# Loops
 		for date in calendar.itermonthdates(2019, currentMonth):
 			# Checks
@@ -312,16 +338,38 @@ class UI(Frame):
 			if (date.weekday() in AccountConfig['SkipDays']): continue
 
 			# Variables
-			frame = Frame(self.scrollFrame.viewPort, width = UIConfig['PageWidthPX'], height = "10")
-			status = Label(frame, text = date.strftime("%a, %B %d %Y"), width = "25", height = "2", bg = "#f2f2f2", fg = "#3b3b3b", font=("Sans-serif", 10, "normal"))
+			bg = "#f2f3f5" if (row % 2 == 0) else "#ffffff"
+			frame = Frame(self.scrollFrame.viewPort, bg = bg, bd = 1, relief = "solid")
+			topFrame = Frame(frame, bg = bg)
+			middleFrame = Frame(frame, bg = bg)
+			bottomFrame = Frame(frame, bg = bg)
+			date = Label(topFrame, text = date.strftime("%a, %B %d %Y"), height = "2", fg = "#3b3b3b", bg = bg, font=("Sans-serif", 11, "normal"))
+			start = Entry(middleFrame)
+			end = Entry(middleFrame)
+			commentLabel = Label(bottomFrame, text = "Date Comments", height = "2", fg = "#3b3b3b", bg = bg, anchor = "w", font=("Sans-serif", 9, "normal"))
+			comment = Text(bottomFrame, height = 2)
 
 			# Attributes
-			status.pack(side="top", fill="x", expand = True)
-			frame.grid(column = 0, row = row, pady = 8, padx = 8, sticky = "n")
+			start.insert(0, "Start time")
+			end.insert(0, "End time")
+			date.grid(column = 0, row = 0, pady = 0, padx = 8, sticky = "w")
+			start.grid(column = 0, row = 0, pady = 8, padx = 8, sticky = "w")
+			end.grid(column = 1, row = 0, pady = 8, padx = 8, sticky = "w")
+			commentLabel.pack(side = "top", fill = "x", expand = True, anchor = "w") #grid(column = 0, row = 0)
+			comment.pack() #grid(column = 0, row = 1, pady = (0, 8), padx = 8)
+			topFrame.pack(side = "top", fill = "x", expand = True)
+			middleFrame.pack(side = "top", fill = "x", expand = True)
+			bottomFrame.pack(side = "top", fill = "x", expand = True)
+			frame.pack(side = "top", fill = "x", expand = True, anchor = "n")
+
+			# Events
+			start.bind("<FocusIn>", self.focus)
+			start.bind("<FocusOut>", self.blur)
+			end.bind("<FocusIn>", self.focus)
+			end.bind("<FocusOut>", self.blur)
 
 			# Increment
 			row = row+1
-		self.scrollFrame.pack(side="top", fill="both", expand = True)
 
 	def exportPopup(self):
 		print("Present month & employee selection, then build pdf")
