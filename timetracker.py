@@ -29,7 +29,7 @@ from assets.queries import Query, where
 from assets.database import TinyDB
 from assets.fpdf import FPDF
 from assets.scroll import ScrollFrame
-from tkinter import Tk, Frame, Menu, PhotoImage, Toplevel, Label, Button, Text, Entry, LEFT, TOP, X, FLAT, RAISED, END, messagebox
+from tkinter import Tk, Frame, Menu, Toplevel, Label, Button, Text, Entry, LEFT, TOP, X, FLAT, RAISED, END, messagebox
 from tkinter.ttk import Combobox, Style
 from datetime import datetime
 import calendar as Calendar
@@ -39,6 +39,7 @@ import os
 window = Tk()
 calendar = Calendar.Calendar()
 currentMonth = datetime.now().month
+currentYear = datetime.now().year
 AccountConfig = {
 	'Name': 'Employee Timesheet',
 	'AccountName': 'Test Account',
@@ -82,7 +83,6 @@ tables = {
 	"timesheets": db.table(DataConfig['Tables']['timesheets']),
 	"timesheetdays": db.table(DataConfig['Tables']['timesheetdays'])
 }
-iconImage = PhotoImage(os.path.join(os.path.join(os.path.join(os.getcwd(), "assets"), "img"), "logo.bmp"))
 
 # Functions
 def createEmployee(Name):
@@ -220,7 +220,6 @@ class UI(Frame):
 		self.master.geometry("450x500")
 		#self.master.resizable(width = False, height = False)
 		self.master.configure(background = '#f2f2f2')
-		self.master.tk.call('wm', 'iconphoto', window._w, iconImage)
 		self.master.option_add('*tearOff', False)
 		self.combostyle = Style()
 		self.combostyle.theme_create('combostyle', parent='alt', settings = {'TCombobox': {'configure': {'selectforeground': '#3b3b3b', 'selectbackground': '#ffffff', 'fieldbackground': '#ffffff', 'background': '#ffffff'}}})
@@ -305,12 +304,12 @@ class UI(Frame):
 		if (event.widget.get().lower() in ["start time", "end time"]):
 			event.widget.delete(0, END)
 
-	def blur(self, event):
+	def blur(self, event, type = 0):
 		# Checks
 		if (not event): return False
 		if (not event.widget): return False
 		if (len(event.widget.get().strip()) <= 0):
-			event.widget.insert(0, "Enter a time")
+			event.widget.insert(0, ("Start time" if type == 0 else "End time"))
 
 	def selectTimeSheet(self, event):
 		# Checks
@@ -328,11 +327,12 @@ class UI(Frame):
 		# Variables
 		row = 0
 		self.currentEmployee = self.employeeSelect.get()
+		self.scrollFrame.pack_forget()
 		self.scrollFrame = self.buildFrame()
-		self.scrollFrame.pack(side="top", fill="both", expand = True)
-		
+		self.scrollFrame.pack(side = "top", fill = "both", expand = True)
+
 		# Loops
-		for date in calendar.itermonthdates(2019, currentMonth):
+		for date in calendar.itermonthdates(currentYear, currentMonth):
 			# Checks
 			if (not date.month == currentMonth): continue
 			if (date.weekday() in AccountConfig['SkipDays']): continue
@@ -364,9 +364,9 @@ class UI(Frame):
 
 			# Events
 			start.bind("<FocusIn>", self.focus)
-			start.bind("<FocusOut>", self.blur)
+			start.bind("<FocusOut>", lambda e: self.blur(e, 0))
 			end.bind("<FocusIn>", self.focus)
-			end.bind("<FocusOut>", self.blur)
+			end.bind("<FocusOut>", lambda e: self.blur(e, 1))
 
 			# Increment
 			row = row+1
